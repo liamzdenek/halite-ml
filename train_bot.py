@@ -14,15 +14,17 @@ REPLAY_FOLDER = sys.argv[1]
 training_input = []
 training_target = []
 
-VISIBLE_DISTANCE = 4
+VISIBLE_DISTANCE = 6
 input_dim=4*(2*VISIBLE_DISTANCE+1)*(2*VISIBLE_DISTANCE+1)
 np.random.seed(0) # for reproducibility
 
 model = Sequential([Dense(512, input_dim=input_dim),
                     LeakyReLU(),
-                    Dense(512),
+                    Dense(256),
                     LeakyReLU(),
-                    Dense(512),
+                    Dense(128),
+                    LeakyReLU(),
+                    Dense(128),
                     LeakyReLU(),
                     Dense(5, activation='softmax')])
 model.compile('nadam','categorical_crossentropy', metrics=['accuracy'])

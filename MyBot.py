@@ -3,7 +3,7 @@ import os
 import sys
 import numpy as np
 
-VISIBLE_DISTANCE = 4
+VISIBLE_DISTANCE = 6
 input_dim=4*(2*VISIBLE_DISTANCE+1)*(2*VISIBLE_DISTANCE+1)
 
 myID, gameMap = getInit()
@@ -27,7 +27,7 @@ def frame_to_stack(frame):
                       game_map[:, :, 2]/255,  # 3 : strength
                       ]).astype(np.float32)
 
-sendInit('brianvanleeuwen')
+sendInit('general-freedom')
 while True:
     stack = frame_to_stack(getFrame())
     positions = np.transpose(np.nonzero(stack[0]))

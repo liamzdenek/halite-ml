@@ -1,0 +1,11 @@
+OverkillBot/
+dist/
+train_*/
+my_games/
+halite
+logs/
+*.h5
+__pycache__/
+*.pyc
+*.zip
+*.swp
