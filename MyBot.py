@@ -4,15 +4,32 @@ import sys
 import numpy as np
 
 VISIBLE_DISTANCE = 6
-input_dim=4*(2*VISIBLE_DISTANCE+1)*(2*VISIBLE_DISTANCE+1)
+input_dim = 4*(2*VISIBLE_DISTANCE+1)*(2*VISIBLE_DISTANCE+1)
+
+
+def predict(model, args, input_dim):
+	if args[0].shape[1] != input_dim:
+		print("Args[0] requires shape", (None,input_dim), ", got", args[0].shape);
+	if args[1].shape[0] != args[0].shape[0]:
+		print("Args[1] requires shape's first index to be ", args[0].shape[0]," got", args[1].shape[0]);
+	return model.predict(args);
+
+old_stderr = sys.stderr;
+old_stdout = sys.stdout;
+with open(os.devnull, 'w') as sys.stderr:
+	with open(os.devnull, 'w') as sys.stdout:
+		print("HERE");
+		import tensorflow 
+		from keras.models import load_model
+		model = load_model('model.h5')
+		print("TEST SHAPE: ", np.random.randn(1,input_dim).shape);
+		print("TEST SHAPE 2: ", np.array([0]).shape);
+		test = predict(model, [np.random.randn(1, input_dim), np.array([0])], input_dim) # make sure model is compiled during init
+		print("GOT SHAPE: ", test.shape);
+sys.stderr = old_stderr;
+sys.stdout = old_stdout;
 
 myID, gameMap = getInit()
-
-with open(os.devnull, 'w') as sys.stderr:
-    from keras.models import load_model
-    model = load_model('model.h5')
-
-model.predict(np.random.randn(1,input_dim)).shape # make sure model is compiled during init
 
 def stack_to_input(stack, position):
     return np.take(np.take(stack,
@@ -27,9 +44,16 @@ def frame_to_stack(frame):
                       game_map[:, :, 2]/255,  # 3 : strength
                       ]).astype(np.float32)
 
+
 sendInit('general-freedom')
+turn = 0;
 while True:
-    stack = frame_to_stack(getFrame())
-    positions = np.transpose(np.nonzero(stack[0]))
-    output = model.predict(np.array([stack_to_input(stack, p) for p in positions]))
-    sendFrame([Move(Location(positions[i][1],positions[i][0]), output[i].argmax()) for i in range(len(positions))])
+	stack = frame_to_stack(getFrame())
+	positions = np.transpose(np.nonzero(stack[0]))
+	input_stack = [
+		np.array([stack_to_input(stack, p) for p in positions]),
+		np.repeat(np.array([min(turn/150,1)]), len(positions)),
+	];
+	output = predict(model, input_stack, input_dim)
+	sendFrame([Move(Location(positions[i][1],positions[i][0]), output[i].argmax()) for i in range(len(positions))])
+	turn += 1;
